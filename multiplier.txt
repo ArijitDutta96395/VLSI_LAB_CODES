@@ -1,0 +1,88 @@
+//4 bit multiplier design 
+`timescale 1ns/1ps
+
+// Full Adder Module
+module FA(input a, input b, input cin, output s, output cout);
+  wire z1, z2, z3;
+  xor(z1, a, b);
+  xor(s, z1, cin);
+  and(z2, z1, cin);
+  and(z3, a, b);
+  or(cout, z2, z3);
+endmodule
+
+// 4-bit Multiplier Module using Full Adders
+module multiplier(input [7:0] m0, input [7:0] m1, input [7:0] m2, input [7:0] m3, output [7:0] p);
+  wire [11:0] w;
+  wire [6:0] o;
+
+  // First part of the diagram
+  FA stage1 (m0[0], m1[0], 1'b0, p[0], w[0]);
+  FA stage2 (m0[1], m1[1], w[0], w[1], w[2]);
+  FA stage3 (m0[2], m1[2], w[2], w[3], w[4]);
+  FA stage4 (m0[3], m1[3], w[4], w[5], w[6]);
+
+  // Second part of the diagram
+  FA stage5 (m0[2], m1[0], w[1], w[7], w[8]);
+  FA stage6 (m0[3], m1[1], w[8], w[9], w[10]);
+  FA stage7 (m2[0], m3[0], w[6], w[11], p[1]);
+
+  // Continue instantiating FA stages as per your multiplier logic if required
+  // You can add more FA stages here depending on your full 4-bit multiplier logic
+
+endmodule
+
+
+
+
+
+//testbench
+`timescale 1ns/1ps
+
+module tb_multiplier;
+
+  // Inputs
+  reg [7:0] m0, m1, m2, m3;
+
+  // Output
+  wire [7:0] p;
+
+  // Instantiate multiplier
+  multiplier uut (
+    .m0(m0),
+    .m1(m1),
+    .m2(m2),
+    .m3(m3),
+    .p(p)
+  );
+
+  initial begin
+    $display("Time\tm0\tm1\tm2\tm3\t|\tp");
+    $monitor("%0dns\t%h\t%h\t%h\t%h\t|\t%h", $time, m0, m1, m2, m3, p);
+
+    // Test Case 1: 3 * 5 = 15
+    m0 = 8'b00000011;
+    m1 = 8'b00000101;
+    m2 = 8'b00000000;
+    m3 = 8'b00000000;
+    #10;
+
+    // Test Case 2: 4 * 4 = 16
+    m0 = 8'b00000100;
+    m1 = 8'b00000100;
+    m2 = 8'b00000000;
+    m3 = 8'b00000000;
+    #10;
+
+    // Test Case 3: 8 * 6 = 48
+    m0 = 8'b00001000;
+    m1 = 8'b00000110;
+    m2 = 8'b00000000;
+    m3 = 8'b00000000;
+    #10;
+
+    $finish;
+  end
+
+endmodule
+

@@ -1,0 +1,181 @@
+//Serial Binary Adder
+// D Flip-Flop Module
+module d_flipflop (
+    input  d, clk, enable, reset,
+    output reg out
+);
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            out <= 1'b0;
+        else if (enable)
+            out <= d;
+    end
+endmodule
+
+// Full Adder Module
+module full_adder (
+    input  a, b, cin,
+    output sum, cout
+);
+    assign {cout, sum} = a + b + cin;
+endmodule
+
+// PISO (Parallel-In Serial-Out) Shift Register
+module piso (
+    input clk, enable, rst,
+    input [3:0] data,
+    output reg out
+);
+    reg [3:0] memory;
+    
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            out <= 1'b0;
+            memory <= data;
+        end
+        else if (enable) begin
+            out <= memory[0];
+            memory <= memory >> 1;
+        end
+    end
+endmodule
+
+// Serial Adder Top Module
+module serial_adder (
+    input [3:0] data_a, data_b,
+    input clk, reset,
+    output [3:0] out,
+    output reg cout
+);
+    reg [2:0] count;
+    reg enable;
+    wire wire_a, wire_b, cout_temp, cin, sum;
+    
+    // Instantiate components
+    piso piso_a (
+        .clk(clk),
+        .enable(enable),
+        .rst(reset),
+        .data(data_a),
+        .out(wire_a)
+    );
+    
+    piso piso_b (
+        .clk(clk),
+        .enable(enable),
+        .rst(reset),
+        .data(data_b),
+        .out(wire_b)
+    );
+    
+    full_adder adder (
+        .a(wire_a),
+        .b(wire_b),
+        .cin(cin),
+        .sum(sum),
+        .cout(cout_temp)
+    );
+    
+    d_flipflop dff (
+        .d(cout_temp),
+        .clk(clk),
+        .enable(enable),
+        .reset(reset),
+        .out(cin)
+    );
+    
+    // Control logic
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            enable <= 1'b1;
+            count <= 3'b000;
+            out <= 4'b0000;
+            cout <= 1'b0;
+        end
+        else begin
+            if (count > 3'b100)
+                enable <= 1'b0;
+            else if (enable) begin
+                cout <= cout_temp;
+                count <= count + 1;
+                out <= {sum, out[3:1]};
+            end
+        end
+    end
+endmodule
+
+
+
+
+
+//Testbench Code
+`timescale 1ns/1ps
+
+module serial_adder_tb;
+    // Inputs
+    reg [3:0] data_a, data_b;
+    reg clk, reset;
+    
+    // Outputs
+    wire [3:0] out;
+    wire cout;
+    
+    // Instantiate UUT
+    serial_adder uut (
+        .data_a(data_a),
+        .data_b(data_b),
+        .clk(clk),
+        .reset(reset),
+        .out(out),
+        .cout(cout)
+    );
+    
+    // Clock generation
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk;
+    end
+    
+    // Test stimulus
+    initial begin
+        // Initialize and reset
+        reset = 1;
+        data_a = 4'b0000;
+        data_b = 4'b0000;
+        #10 reset = 0;
+        
+        // Test case 1: 5 + 3 = 8 (0101 + 0011 = 1000)
+        data_a = 4'b0101;
+        data_b = 4'b0011;
+        #80; // Wait for 8 clock cycles
+        
+        // Test case 2: 15 + 1 = 16 (overflow case)
+        reset = 1;
+        #10 reset = 0;
+        data_a = 4'b1111;
+        data_b = 4'b0001;
+        #80;
+        
+        // Test case 3: 7 + 7 = 14
+        reset = 1;
+        #10 reset = 0;
+        data_a = 4'b0111;
+        data_b = 4'b0111;
+        #80;
+        
+        // Test case 4: 0 + 0 = 0
+        reset = 1;
+        #10 reset = 0;
+        data_a = 4'b0000;
+        data_b = 4'b0000;
+        #80;
+        
+        $finish;
+    end
+    
+    // Monitoring
+    initial begin
+        $monitor("Time=%0t: A=%b B=%b | Out=%b Cout=%b | Count=%d",
+                $time, data_a, data_b, out, cout, uut.count);
+    end
+endmodule

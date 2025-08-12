@@ -1,0 +1,111 @@
+//BCD COUNTER
+module bcd_counter (
+    input clk,          // Clock input
+    input rst,          // Synchronous reset (active high)
+    output reg [3:0] bcd_out  // BCD counter output (0-9)
+);
+
+    // Main counter logic
+    always @(posedge clk) begin
+        if (rst) begin
+            // Synchronous reset
+            bcd_out <= 4'd0;
+        end
+        else begin
+            // BCD counting (0-9)
+            if (bcd_out < 4'd9) begin
+                bcd_out <= bcd_out + 4'd1;
+            end
+            else begin
+                bcd_out <= 4'd0;
+            end
+        end
+    end
+
+endmodule
+
+
+
+
+//Testbench Code
+`timescale 1ns/1ps
+
+module bcd_counter_tb;
+
+    // Inputs
+    reg clk;
+    reg rst;
+    
+    // Outputs
+    wire [3:0] bcd_out;
+    
+    // Instantiate the Unit Under Test (UUT)
+    bcd_counter uut (
+        .clk(clk),
+        .rst(rst),
+        .bcd_out(bcd_out)
+    );
+    
+    // Clock generation (100MHz)
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk; // 10ns period = 100MHz
+    end
+    
+    // Test stimulus
+    initial begin
+        // Initialize inputs
+        rst = 1;
+        
+        // Test Case 1: Reset test
+        #20; // Wait 2 clock cycles
+        rst = 0;
+        $display("Reset released at %0t", $time);
+        
+        // Test Case 2: Count through full BCD cycle (0-9)
+        #100; // Wait for 10 clock cycles
+        
+        // Test Case 3: Reset during counting
+        rst = 1;
+        #10;
+        rst = 0;
+        $display("Reset pulsed at %0t", $time);
+        
+        // Test Case 4: Count through multiple cycles
+        #200; // Wait for 20 clock cycles
+        
+        // Test Case 5: Final reset
+        rst = 1;
+        #10;
+        $display("Test completed at %0t", $time);
+        $finish;
+    end
+    
+    // Monitoring and verification
+    initial begin
+        $monitor("Time = %0t ns | RST = %b | Count = %d", 
+                $time, rst, bcd_out);
+    end
+    
+    // Store previous value of bcd_out for verification
+    reg [3:0] past_bcd_out;
+    always @(posedge clk) begin
+        past_bcd_out <= bcd_out; // Store previous value of bcd_out
+    end
+    
+    // Verification checks
+    always @(posedge clk) begin
+        if (!rst) begin
+            // Check for invalid BCD states
+            if (bcd_out > 4'd9) begin
+                $error("Invalid BCD state: %b at time %0t", bcd_out, $time);
+            end
+            
+            // Check rollover from 9 to 0
+            if (past_bcd_out == 4'd9 && bcd_out != 4'd0) begin
+                $error("Failed to rollover at count 9 at time %0t", $time);
+            end
+        end
+    end
+
+endmodule

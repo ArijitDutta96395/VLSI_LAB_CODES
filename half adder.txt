@@ -1,0 +1,126 @@
+//1: Dataflow Representation
+module half_adder_dataflow (
+    input a,    // Input 'a'
+    input b,    // Input 'b'
+    output s,   // Output 's' (Sum)
+    output c    // Output 'c' (Carry)
+);
+    assign s = a ^ b;  // Dataflow expression for sum
+    assign c = a & b;  // Dataflow expression for carry
+endmodule
+
+
+//2: Structural Method
+module half_adder_structural (
+    input a,    // Input 'a'
+    input b,    // Input 'b'
+    output s,   // Output 's' (Sum)
+    output c    // Output 'c' (Carry)
+);
+    xor gate_xor (s, a, b);  // XOR gate for sum
+    and gate_and (c, a, b);  // AND gate for carry
+endmodule
+
+
+//3: Behavioral Representation
+module half_adder_behavioral (
+    input a,    // Input 'a'
+    input b,    // Input 'b'
+    output s,   // Output 's' (Sum)
+    output c    // Output 'c' (Carry)
+);
+    // Combinational logic equations for sum and carry
+    always @(*) begin
+        s = a ^ b;  // XOR operation for sum
+        c = a & b;  // AND operation for carry
+    end
+endmodule
+
+
+
+//1: Dataflow Representation tb
+module half_adder_dataflow_tb;
+    reg a, b;        // Input signals
+    wire s, c;       // Output signals
+
+    // Instantiate the Half-Adder Dataflow Module
+    half_adder_dataflow uut (
+        .a(a),
+        .b(b),
+        .s(s),
+        .c(c)
+    );
+
+    // Test Vectors
+    initial begin
+        // Display the output
+        $monitor("a = %b, b = %b, Sum = %b, Carry = %b", a, b, s, c);
+        
+        // Apply Test Cases
+        a = 0; b = 0; #10;  // Test Case 1: 0 + 0
+        a = 0; b = 1; #10;  // Test Case 2: 0 + 1
+        a = 1; b = 0; #10;  // Test Case 3: 1 + 0
+        a = 1; b = 1; #10;  // Test Case 4: 1 + 1
+        
+        $finish;  // End the simulation
+    end
+endmodule
+
+
+//2: Structural Method tb
+module half_adder_structural_tb;
+    reg a, b;        // Input signals
+    wire s, c;       // Output signals
+
+    // Instantiate the Half-Adder Structural Module
+    half_adder_structural uut (
+        .a(a),
+        .b(b),
+        .s(s),
+        .c(c)
+    );
+
+    // Test Vectors
+    initial begin
+        // Display the output
+        $monitor("a = %b, b = %b, Sum = %b, Carry = %b", a, b, s, c);
+        
+        // Apply Test Cases
+        a = 0; b = 0; #10;  // Test Case 1: 0 + 0
+        a = 0; b = 1; #10;  // Test Case 2: 0 + 1
+        a = 1; b = 0; #10;  // Test Case 3: 1 + 0
+        a = 1; b = 1; #10;  // Test Case 4: 1 + 1
+        
+        $finish;  // End the simulation
+    end
+endmodule
+
+
+//3: Behavioral Representation tb
+module half_adder_behavioral_tb;
+    reg a, b;        // Input signals
+    wire s, c;       // Output signals
+
+    // Instantiate the Half-Adder Behavioral Module
+    half_adder_behavioral uut (
+        .a(a),
+        .b(b),
+        .s(s),
+        .c(c)
+    );
+
+    // Test Vectors
+    initial begin
+        // Display the output
+        $monitor("a = %b, b = %b, Sum = %b, Carry = %b", a, b, s, c);
+        
+        // Apply Test Cases
+        a = 0; b = 0; #10;  // Test Case 1: 0 + 0
+        a = 0; b = 1; #10;  // Test Case 2: 0 + 1
+        a = 1; b = 0; #10;  // Test Case 3: 1 + 0
+        a = 1; b = 1; #10;  // Test Case 4: 1 + 1
+        
+        $finish;  // End the simulation
+    end
+endmodule
+

@@ -1,0 +1,107 @@
+//1:2 Demux Verilog Code:
+module demux_2_1 (
+    input sel,        // Selector input
+    input i,          // Data input
+    output y0, y1     // Output signals
+);
+
+    // Assigning values to outputs based on the selector
+    assign {y0, y1} = sel ? {1'b0, i} : {i, 1'b0};
+
+endmodule
+
+
+//Testbench for 1:2 Demux (Dataflow Model
+module demux_2_1_tb;
+    reg sel;        // Input signal for selector
+    reg i;          // Input data
+    wire y0, y1;    // Output signals
+
+    // Instantiate the 1:2 Demux module
+    demux_2_1 uut (
+        .sel(sel),
+        .i(i),
+        .y0(y0),
+        .y1(y1)
+    );
+
+    // Test Vectors
+    initial begin
+        // Display the output
+        $monitor("sel = %b, i = %b, y0 = %b, y1 = %b", sel, i, y0, y1);
+
+        // Apply Test Cases
+        sel = 0; i = 0; #10;  // Test Case 1: sel = 0, i = 0
+        sel = 1; i = 0; #10;  // Test Case 2: sel = 1, i = 0
+        sel = 0; i = 1; #10;  // Test Case 3: sel = 0, i = 1
+        sel = 1; i = 1; #10;  // Test Case 4: sel = 1, i = 1
+
+        $finish;  // End the simulation
+    end
+endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+//1:4 Demux Verilog Code
+module demux_1_4 (
+    input [1:0] sel,    // 2-bit Selector input
+    input i,            // Data input
+    output reg y0, y1, y2, y3  // 4 output signals
+);
+
+    always @(*) begin
+        case(sel)
+            2'b00: {y0, y1, y2, y3} = {i, 3'b0};
+            2'b01: {y0, y1, y2, y3} = {1'b0, i, 2'b0};
+            2'b10: {y0, y1, y2, y3} = {2'b0, i, 1'b0};
+            2'b11: {y0, y1, y2, y3} = {3'b0, i};
+            default: $display("Invalid sel input");
+        endcase
+    end
+
+endmodule
+
+
+//Testbench for 1:4 Demux (Structural Model)
+
+module demux_1_4_tb;
+    reg [1:0] sel;     // 2-bit Selector input
+    reg i;             // Data input
+    wire y0, y1, y2, y3;  // Output signals
+
+    // Instantiate the 1:4 Demux module
+    demux_1_4 uut (
+        .sel(sel),
+        .i(i),
+        .y0(y0),
+        .y1(y1),
+        .y2(y2),
+        .y3(y3)
+    );
+
+    // Test Vectors
+    initial begin
+        // Display the output
+        $monitor("sel = %b, i = %b, y0 = %b, y1 = %b, y2 = %b, y3 = %b", 
+                 sel, i, y0, y1, y2, y3);
+
+        // Apply Test Cases
+        sel = 2'b00; i = 0; #10;  // Test Case 1: sel = 00, i = 0
+        sel = 2'b01; i = 1; #10;  // Test Case 2: sel = 01, i = 1
+        sel = 2'b10; i = 0; #10;  // Test Case 3: sel = 10, i = 0
+        sel = 2'b11; i = 1; #10;  // Test Case 4: sel = 11, i = 1
+
+        $finish;  // End the simulation
+    end
+endmodule
+

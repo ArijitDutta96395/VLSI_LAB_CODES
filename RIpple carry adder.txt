@@ -1,0 +1,124 @@
+//4-bit Ripple Carry Adder
+// 1-bit Full Adder Module
+module fulladder_1 (
+    input  a, b, cin,
+    output sum, cout
+);
+    // Sum calculation
+    assign sum = a ^ b ^ cin;
+    
+    // Carry-out calculation
+    assign cout = (a & b) | (b & cin) | (cin & a);
+endmodule
+
+// 4-bit Ripple Carry Adder (named readder_4 as requested)
+module readder_4 (
+    input  [3:0] A, B,  // 4-bit inputs
+    input  Cin,         // Carry-in
+    output [3:0] Sum,   // 4-bit sum output
+    output Cout         // Carry-out
+);
+    // Internal carry wires
+    wire c0, c1, c2;
+    
+    // Instantiate 4 full adders in series
+    fulladder_1 M0 (
+        .a(A[0]),
+        .b(B[0]),
+        .cin(Cin),
+        .sum(Sum[0]),
+        .cout(c0)
+    );
+    
+    fulladder_1 M1 (
+        .a(A[1]),
+        .b(B[1]),
+        .cin(c0),
+        .sum(Sum[1]),
+        .cout(c1)
+    );
+    
+    fulladder_1 M2 (
+        .a(A[2]),
+        .b(B[2]),
+        .cin(c1),
+        .sum(Sum[2]),
+        .cout(c2)
+    );
+    
+    fulladder_1 M3 (
+        .a(A[3]),
+        .b(B[3]),
+        .cin(c2),
+        .sum(Sum[3]),
+        .cout(Cout)
+    );
+endmodule
+
+
+
+
+
+
+//testbench
+`timescale 1ns/1ps
+
+module readder_4_tb;
+    // Inputs
+    reg [3:0] A, B;
+    reg Cin;
+    
+    // Outputs
+    wire [3:0] Sum;
+    wire Cout;
+    
+    // Instantiate the Unit Under Test (UUT)
+    readder_4 uut (
+        .A(A),
+        .B(B),
+        .Cin(Cin),
+        .Sum(Sum),
+        .Cout(Cout)
+    );
+    
+    // Test cases
+    initial begin
+        // Test Case 1: 0000 + 0000 + 0 = 00000
+        A = 4'b0000; B = 4'b0000; Cin = 0;
+        #10;
+        $display("Test 1: %b + %b + %b = %b%b | %s",
+                A, B, Cin, Cout, Sum,
+                ({Cout,Sum}==5'b00000)?"PASS":"FAIL");
+        
+        // Test Case 2: 0111 + 1100 + 1 = 10100 (7 + 12 + 1 = 20)
+        A = 4'b0111; B = 4'b1100; Cin = 1;
+        #10;
+        $display("Test 2: %b + %b + %b = %b%b | %s",
+                A, B, Cin, Cout, Sum,
+                ({Cout,Sum}==5'b10100)?"PASS":"FAIL");
+        
+        // Test Case 3: 0011 + 1000 + 0 = 01011 (3 + 8 + 0 = 11)
+        A = 4'b0011; B = 4'b1000; Cin = 0;
+        #10;
+        $display("Test 3: %b + %b + %b = %b%b | %s",
+                A, B, Cin, Cout, Sum,
+                ({Cout,Sum}==5'b01011)?"PASS":"FAIL");
+        
+        // Test Case 4: 1111 + 0001 + 1 = 10001 (15 + 1 + 1 = 17)
+        A = 4'b1111; B = 4'b0001; Cin = 1;
+        #10;
+        $display("Test 4: %b + %b + %b = %b%b | %s",
+                A, B, Cin, Cout, Sum,
+                ({Cout,Sum}==5'b10001)?"PASS":"FAIL");
+        
+        // Additional test cases
+        // Test Case 5: 1010 + 0101 + 0 = 01111 (10 + 5 = 15)
+        A = 4'b1010; B = 4'b0101; Cin = 0;
+        #10;
+        $display("Test 5: %b + %b + %b = %b%b | %s",
+                A, B, Cin, Cout, Sum,
+                ({Cout,Sum}==5'b01111)?"PASS":"FAIL");
+        
+        $finish;
+    end
+endmodule

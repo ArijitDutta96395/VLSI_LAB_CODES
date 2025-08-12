@@ -1,0 +1,114 @@
+// 1: DataFlow Model
+module full_subtractor (
+    input  a, b, Bin,    
+    output D, Bout       
+);
+
+    assign D = a ^ b ^ Bin;
+    assign Bout = (~a & b) | (~(a ^ b) & Bin);
+
+endmodule
+
+
+// 2: Structural Model
+module full_subtractor_s (
+    input a, b, Bin,         // Inputs: A, B, and Borrow In
+    output diff, bout        // Outputs: Difference and Borrow Out
+);
+
+    wire xor1_out, xor2_out, and1_out, and2_out;
+
+    // First Half Subtractor: Subtract A and B
+    xor xor1 (xor1_out, a, b);     // XOR gate for difference
+    and and1 (and1_out, ~a, b);    // AND gate for borrow
+    
+    // Second Half Subtractor: Subtract the Borrow In from the first result
+    xor xor2 (xor2_out, xor1_out, Bin);   // XOR gate for final difference
+    and and2 (and2_out, ~xor1_out, Bin);  // AND gate for borrow
+    
+    // Final Output Assignments
+    assign diff = xor2_out;     // Final Difference output
+    assign bout = and1_out | and2_out;  // Final Borrow Out output (OR of both borrow conditions)
+
+endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+//1: Testbench for DataFlow Model
+module full_subtractor_tb_dataflow;
+    reg a, b, Bin;         // Input signals for full subtractor
+    wire D, Bout;          // Output signals for full subtractor
+
+    // Instantiate the Full Subtractor Dataflow Model
+    full_subtractor uut_dataflow (
+        .a(a),
+        .b(b),
+        .Bin(Bin),
+        .D(D),
+        .Bout(Bout)
+    );
+
+    // Test Vectors
+    initial begin
+        // Display the output
+        $monitor("a = %b, b = %b, Bin = %b, Difference = %b, Borrow = %b", a, b, Bin, D, Bout);
+        
+        // Apply Test Cases
+        a = 0; b = 0; Bin = 0; #10;  // Test Case 1: 0 - 0 - 0
+        a = 0; b = 1; Bin = 0; #10;  // Test Case 2: 0 - 1 - 0
+        a = 1; b = 0; Bin = 0; #10;  // Test Case 3: 1 - 0 - 0
+        a = 1; b = 1; Bin = 0; #10;  // Test Case 4: 1 - 1 - 0
+        a = 0; b = 0; Bin = 1; #10;  // Test Case 5: 0 - 0 - 1
+        a = 0; b = 1; Bin = 1; #10;  // Test Case 6: 0 - 1 - 1
+        a = 1; b = 0; Bin = 1; #10;  // Test Case 7: 1 - 0 - 1
+        a = 1; b = 1; Bin = 1; #10;  // Test Case 8: 1 - 1 - 1
+        
+        $finish;  // End the simulation
+    end
+endmodule
+
+//2: Testbench for Structural Model
+module full_subtractor_tb_structural;
+    reg a, b, Bin;         // Input signals for full subtractor
+    wire diff, bout;       // Output signals for full subtractor
+
+    // Instantiate the Full Subtractor Structural Model
+    full_subtractor_s uut_structural (
+        .a(a),
+        .b(b),
+        .Bin(Bin),
+        .diff(diff),
+        .bout(bout)
+    );
+
+    // Test Vectors
+    initial begin
+        // Display the output
+        $monitor("a = %b, b = %b, Bin = %b, Difference = %b, Borrow = %b", a, b, Bin, diff, bout);
+        
+        // Apply Test Cases
+        a = 0; b = 0; Bin = 0; #10;  // Test Case 1: 0 - 0 - 0
+        a = 0; b = 1; Bin = 0; #10;  // Test Case 2: 0 - 1 - 0
+        a = 1; b = 0; Bin = 0; #10;  // Test Case 3: 1 - 0 - 0
+        a = 1; b = 1; Bin = 0; #10;  // Test Case 4: 1 - 1 - 0
+        a = 0; b = 0; Bin = 1; #10;  // Test Case 5: 0 - 0 - 1
+        a = 0; b = 1; Bin = 1; #10;  // Test Case 6: 0 - 1 - 1
+        a = 1; b = 0; Bin = 1; #10;  // Test Case 7: 1 - 0 - 1
+        a = 1; b = 1; Bin = 1; #10;  // Test Case 8: 1 - 1 - 1
+        
+        $finish;  // End the simulation
+    end
+endmodule
+
+
+
+

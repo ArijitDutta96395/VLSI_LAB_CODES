@@ -1,0 +1,148 @@
+// 1: Data FLOW
+module half_subtractor (
+    input  a, b,    
+    output D, B     
+);
+    assign D = a ^ b;
+    assign B = ~a & b;
+
+endmodule
+
+// 2: Structural Model
+module half_subtractor_s (
+    input a, b,        
+    output diff, bor   
+);
+
+    wire xor_out, and_out;
+
+    xor xor1 (xor_out, a, b);
+    assign diff = xor_out;
+
+    and and1 (and_out, ~a, b);
+    assign bor = and_out;
+
+endmodule
+
+// 3: Behavioral Model 
+module half_subtractor_b (
+    input a, b,        
+    output reg diff, bor   
+);
+    always @ (a or b) begin
+
+        diff = a ^ b;
+        bor = ~a & b;
+    end
+
+endmodule
+
+
+
+
+
+
+
+//1:Dataflow testbench
+module half_subtractor_tb_dataflow;
+    reg a, b;           // Input signals for half subtractor
+    wire diff, bor;     // Output signals for half subtractor
+
+    // Instantiate the Half Subtractor Dataflow Model
+    half_subtractor uut_dataflow (
+        .a(a),
+        .b(b),
+        .D(diff),
+        .B(bor)
+    );
+
+    // Test Vectors
+    initial begin
+        // Display the output
+        $monitor("a = %b, b = %b, Difference = %b, Borrow = %b", a, b, diff, bor);
+        
+        // Apply Test Cases
+        a = 0; b = 0; #10;  // Test Case 1: 0 - 0
+        a = 0; b = 1; #10;  // Test Case 2: 0 - 1
+        a = 1; b = 0; #10;  // Test Case 3: 1 - 0
+        a = 1; b = 1; #10;  // Test Case 4: 1 - 1
+        
+        $finish;  // End the simulation
+    end
+endmodule
+
+
+//2: Structural testbench
+module half_subtractor_tb_structural;
+    reg a, b;           // Input signals for half subtractor
+    wire diff, bor;     // Output signals for half subtractor
+
+    // Instantiate the Half Subtractor Structural Model
+    half_subtractor_s uut_structural (
+        .a(a),
+        .b(b),
+        .diff(diff),
+        .bor(bor)
+    );
+
+    // Test Vectors
+    initial begin
+        // Display the output
+        $monitor("a = %b, b = %b, Difference = %b, Borrow = %b", a, b, diff, bor);
+        
+        // Apply Test Cases
+        a = 0; b = 0; #10;  // Test Case 1: 0 - 0
+        a = 0; b = 1; #10;  // Test Case 2: 0 - 1
+        a = 1; b = 0; #10;  // Test Case 3: 1 - 0
+        a = 1; b = 1; #10;  // Test Case 4: 1 - 1
+        
+        $finish;  // End the simulation
+    end
+endmodule
+
+
+//3: Behavioral testbench
+module half_subtractor_tb_behavioral;
+    reg a, b;           // Input signals for half subtractor
+    wire diff, bor;     // Output signals for half subtractor
+
+    // Instantiate the Half Subtractor Behavioral Model
+    half_subtractor_b uut_behavioral (
+        .a(a),
+        .b(b),
+        .diff(diff),
+        .bor(bor)
+    );
+
+    // Test Vectors
+    initial begin
+        // Display the output
+        $monitor("a = %b, b = %b, Difference = %b, Borrow = %b", a, b, diff, bor);
+        
+        // Apply Test Cases
+        a = 0; b = 0; #10;  // Test Case 1: 0 - 0
+        a = 0; b = 1; #10;  // Test Case 2: 0 - 1
+        a = 1; b = 0; #10;  // Test Case 3: 1 - 0
+        a = 1; b = 1; #10;  // Test Case 4: 1 - 1
+        
+        $finish;  // End the simulation
+    end
+endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

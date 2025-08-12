@@ -1,0 +1,30 @@
+*1. CMOS Inverter Transient Analysis
+CCapacitor_1 b Gnd 1p
+MNMOS_1 b a Gnd Gnd NH W=2.5u L=150n AS=2.25p PS=6.8u AD=2.25p PD=6.8u
+MPMOS_1 b a vdd vdd PH W=2.5u L=150n AS=2.25p PS=6.8u AD=2.25p PD=6.8u
+VVoltageSource_1 a Gnd PULSE(0 5 0 5n 5n 95n 200n)
+vdd vdd gnd dc 5v
+.include "C:\Documents and Settings\user\Desktop\dual.md"
+.tran 2ns 400ns
+.print tran v(a) v(b)
+
+* Corrected Propagation Delay Measurements
+.measure tran tphl trig v(a) val=2.5 rise=1 targ v(b) val=2.5 fall=1
+.measure tran tplh trig v(a) val=2.5 fall=1 targ v(b) val=2.5 rise=1
+.measure tran tp param='(tphl+tplh)/2'
+
+* Power Dissipation Measurement
+.power Vdd 0n 400n
+.end
+
+
+
+*2. CMOS DC Analysis
+CCapacitor_1 Out Gnd 1p
+MNMOS_1 Out In Gnd Gnd NH W=2.5u L=150n AS=2.25p PS=6.8u AD=2.25p PD=6.8u
+MPMOS_1 Out In vdd vdd PH W=2.5u L=150n AS=2.25p PS=6.8u AD=2.25p PD=6.8u
+VVoltageSource_1 In Gnd PULSE(0 5 0 5n 5n 95n 200n)
+vdd vdd gnd dc 5v
+.include "C:\Documents and Settings\user\Desktop\dual.md"
+.print dc v(In) v(Out)
+.end
